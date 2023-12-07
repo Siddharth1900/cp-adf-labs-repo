@@ -1,0 +1,62 @@
+{
+	"name": "dataflow1",
+	"properties": {
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"linkedService": {
+						"referenceName": "ls_adlsgen2",
+						"type": "LinkedServiceReference"
+					},
+					"name": "source"
+				},
+				{
+					"linkedService": {
+						"referenceName": "ls_AzureSqlDatabase1",
+						"type": "LinkedServiceReference"
+					},
+					"name": "target"
+				}
+			],
+			"sinks": [],
+			"transformations": [],
+			"scriptLines": [
+				"parameters{",
+				"     df_param_loaddate as string",
+				"}",
+				"source(useSchema: false,",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     inferDriftedColumnTypes: true,",
+				"     ignoreNoFilesFound: false,",
+				"     format: 'delimited',",
+				"     fileSystem: 'global',",
+				"     folderPath: (concat(\"india/silver/\", $df_param_loaddate)),",
+				"     columnDelimiter: ',',",
+				"     escapeChar: '\\\\',",
+				"     quoteChar: '\\\"',",
+				"     columnNamesAsHeader: false) ~> source",
+				"source(output(",
+				"          surrogate_key as long,",
+				"          cid as integer,",
+				"          cname as string,",
+				"          clocation as string,",
+				"          cphno as long,",
+				"          created_by as string,",
+				"          created_on as timestamp,",
+				"          updated_by as string,",
+				"          updated_on as timestamp",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     inferDriftedColumnTypes: true,",
+				"     format: 'table',",
+				"     store: 'sqlserver',",
+				"     schemaName: 'dbo',",
+				"     tableName: 'dim_cust',",
+				"     isolationLevel: 'READ_UNCOMMITTED') ~> target"
+			]
+		}
+	}
+}
