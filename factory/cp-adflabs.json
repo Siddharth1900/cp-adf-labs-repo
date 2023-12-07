@@ -1,0 +1,9 @@
+{
+	"name": "cp-adflabs",
+	"location": "centralus",
+	"identity": {
+		"type": "SystemAssigned",
+		"principalId": "b0fe0a31-a7df-4c75-9a79-21476329c277",
+		"tenantId": "fedd5153-125a-400a-a3cc-a626800d92ab"
+	}
+}
