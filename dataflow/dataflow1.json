@@ -19,13 +19,62 @@
 					"name": "target"
 				}
 			],
-			"sinks": [],
-			"transformations": [],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "AzureSqlTable1",
+						"type": "DatasetReference"
+					},
+					"name": "sink1"
+				},
+				{
+					"dataset": {
+						"referenceName": "AzureSqlTable1",
+						"type": "DatasetReference"
+					},
+					"name": "sink2"
+				}
+			],
+			"transformations": [
+				{
+					"name": "select1"
+				},
+				{
+					"name": "derivedColumn1"
+				},
+				{
+					"name": "lookup1"
+				},
+				{
+					"name": "split1"
+				},
+				{
+					"name": "alterRow1"
+				},
+				{
+					"name": "derivedColumn2"
+				},
+				{
+					"name": "select2"
+				},
+				{
+					"name": "derivedColumn3"
+				},
+				{
+					"name": "alterRow2"
+				}
+			],
 			"scriptLines": [
 				"parameters{",
 				"     df_param_loaddate as string",
 				"}",
-				"source(useSchema: false,",
+				"source(output(",
+				"          cid as short,",
+				"          {cname } as string,",
+				"          clocation as string,",
+				"          cphno as long",
+				"     ),",
+				"     useSchema: false,",
 				"     allowSchemaDrift: true,",
 				"     validateSchema: false,",
 				"     inferDriftedColumnTypes: true,",
@@ -36,7 +85,7 @@
 				"     columnDelimiter: ',',",
 				"     escapeChar: '\\\\',",
 				"     quoteChar: '\\\"',",
-				"     columnNamesAsHeader: false) ~> source",
+				"     columnNamesAsHeader: true) ~> source",
 				"source(output(",
 				"          surrogate_key as long,",
 				"          cid as integer,",
@@ -55,7 +104,76 @@
 				"     store: 'sqlserver',",
 				"     schemaName: 'dbo',",
 				"     tableName: 'dim_cust',",
-				"     isolationLevel: 'READ_UNCOMMITTED') ~> target"
+				"     isolationLevel: 'READ_UNCOMMITTED') ~> target",
+				"source select(mapColumn(",
+				"          each(match(1==1),",
+				"               concat('src_',$$) = $$)",
+				"     ),",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true) ~> select1",
+				"select1 derive(src_surrogate_key = crc32(concat(toString(src_cid),{src_cname },src_clocation,toString(src_cphno)))) ~> derivedColumn1",
+				"derivedColumn1, target lookup(src_cid == cid,",
+				"     multiple: false,",
+				"     pickup: 'any',",
+				"     broadcast: 'auto')~> lookup1",
+				"lookup1 split(isNull(cid),",
+				"     (src_cid==cid && src_surrogate_key!=surrogate_key),",
+				"     disjoint: true) ~> split1@(NewRecords, UpdatedRecords)",
+				"select2 alterRow(insertIf(1==1)) ~> alterRow1",
+				"split1@NewRecords derive(created_by = 'dataflow',",
+				"          created_on = currentTimestamp(),",
+				"          updated_by = 'dataflow',",
+				"          updated_on = currentTimestamp()) ~> derivedColumn2",
+				"derivedColumn2 select(mapColumn(",
+				"          surrogate_key = src_surrogate_key,",
+				"          cid = src_cid,",
+				"          {cname } = {src_cname },",
+				"          clocation = src_clocation,",
+				"          cphno = src_cphno,",
+				"          created_by,",
+				"          created_on,",
+				"          updated_by,",
+				"          updated_on",
+				"     ),",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true) ~> select2",
+				"split1@UpdatedRecords derive(created_by = 'dataflow',",
+				"          created_on = currentTimestamp(),",
+				"          updated_by = 'dataflow',",
+				"          updated_on = currentTimestamp()) ~> derivedColumn3",
+				"derivedColumn3 alterRow(updateIf(1==1)) ~> alterRow2",
+				"alterRow1 sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     deletable:false,",
+				"     insertable:true,",
+				"     updateable:false,",
+				"     upsertable:false,",
+				"     format: 'table',",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     errorHandlingOption: 'stopOnFirstError') ~> sink1",
+				"alterRow2 sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     deletable:false,",
+				"     insertable:false,",
+				"     updateable:true,",
+				"     upsertable:false,",
+				"     keys:['cid'],",
+				"     format: 'table',",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     errorHandlingOption: 'stopOnFirstError',",
+				"     mapColumn(",
+				"          surrogate_key = src_surrogate_key,",
+				"          cid = src_cid,",
+				"          {cname } = {src_cname },",
+				"          clocation = src_clocation,",
+				"          cphno = src_cphno,",
+				"          created_by,",
+				"          created_on,",
+				"          updated_by,",
+				"          updated_on",
+				"     )) ~> sink2"
 			]
 		}
 	}
