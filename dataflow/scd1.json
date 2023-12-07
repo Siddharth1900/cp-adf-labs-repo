@@ -21,9 +21,9 @@
 			],
 			"sinks": [
 				{
-					"dataset": {
-						"referenceName": "AzureSqlTable1",
-						"type": "DatasetReference"
+					"linkedService": {
+						"referenceName": "ls_AzureSqlDatabase1",
+						"type": "LinkedServiceReference"
 					},
 					"name": "sink1"
 				},
@@ -55,13 +55,13 @@
 					"name": "derivedColumn2"
 				},
 				{
-					"name": "select2"
-				},
-				{
 					"name": "derivedColumn3"
 				},
 				{
 					"name": "alterRow2"
+				},
+				{
+					"name": "select3"
 				}
 			],
 			"scriptLines": [
@@ -119,39 +119,60 @@
 				"lookup1 split(isNull(cid),",
 				"     (src_cid==cid && src_surrogate_key!=surrogate_key),",
 				"     disjoint: true) ~> split1@(NewRecords, UpdatedRecords)",
-				"select2 alterRow(insertIf(1==1)) ~> alterRow1",
-				"split1@NewRecords derive(created_by = 'dataflow',",
+				"derivedColumn2 alterRow(insertIf(true())) ~> alterRow1",
+				"select3 derive(created_by = 'dataflow',",
 				"          created_on = currentTimestamp(),",
 				"          updated_by = 'dataflow',",
 				"          updated_on = currentTimestamp()) ~> derivedColumn2",
-				"derivedColumn2 select(mapColumn(",
+				"split1@UpdatedRecords derive(created_by = 'dataflow',",
+				"          created_on = currentTimestamp(),",
+				"          updated_by = 'dataflow',",
+				"          updated_on = currentTimestamp()) ~> derivedColumn3",
+				"derivedColumn3 alterRow(updateIf(1==1)) ~> alterRow2",
+				"split1@NewRecords select(mapColumn(",
+				"          src_surrogate_key,",
+				"          src_cid,",
+				"          {src_cname },",
+				"          src_clocation,",
+				"          src_cphno",
+				"     ),",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true) ~> select3",
+				"alterRow1 sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     input(",
+				"          surrogate_key as long,",
+				"          cid as integer,",
+				"          cname as string,",
+				"          clocation as string,",
+				"          cphno as long,",
+				"          created_by as string,",
+				"          created_on as timestamp,",
+				"          updated_by as string,",
+				"          updated_on as timestamp",
+				"     ),",
+				"     format: 'table',",
+				"     store: 'sqlserver',",
+				"     schemaName: 'dbo',",
+				"     tableName: 'dim_cust',",
+				"     insertable: true,",
+				"     updateable: false,",
+				"     deletable: false,",
+				"     upsertable: false,",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     errorHandlingOption: 'stopOnFirstError',",
+				"     mapColumn(",
 				"          surrogate_key = src_surrogate_key,",
 				"          cid = src_cid,",
-				"          {cname } = {src_cname },",
+				"          cname = {src_cname },",
 				"          clocation = src_clocation,",
 				"          cphno = src_cphno,",
 				"          created_by,",
 				"          created_on,",
 				"          updated_by,",
 				"          updated_on",
-				"     ),",
-				"     skipDuplicateMapInputs: true,",
-				"     skipDuplicateMapOutputs: true) ~> select2",
-				"split1@UpdatedRecords derive(created_by = 'dataflow',",
-				"          created_on = currentTimestamp(),",
-				"          updated_by = 'dataflow',",
-				"          updated_on = currentTimestamp()) ~> derivedColumn3",
-				"derivedColumn3 alterRow(updateIf(1==1)) ~> alterRow2",
-				"alterRow1 sink(allowSchemaDrift: true,",
-				"     validateSchema: false,",
-				"     deletable:false,",
-				"     insertable:true,",
-				"     updateable:false,",
-				"     upsertable:false,",
-				"     format: 'table',",
-				"     skipDuplicateMapInputs: true,",
-				"     skipDuplicateMapOutputs: true,",
-				"     errorHandlingOption: 'stopOnFirstError') ~> sink1",
+				"     )) ~> sink1",
 				"alterRow2 sink(allowSchemaDrift: true,",
 				"     validateSchema: false,",
 				"     deletable:false,",
@@ -162,18 +183,7 @@
 				"     format: 'table',",
 				"     skipDuplicateMapInputs: true,",
 				"     skipDuplicateMapOutputs: true,",
-				"     errorHandlingOption: 'stopOnFirstError',",
-				"     mapColumn(",
-				"          surrogate_key = src_surrogate_key,",
-				"          cid = src_cid,",
-				"          {cname } = {src_cname },",
-				"          clocation = src_clocation,",
-				"          cphno = src_cphno,",
-				"          created_by,",
-				"          created_on,",
-				"          updated_by,",
-				"          updated_on",
-				"     )) ~> sink2"
+				"     errorHandlingOption: 'stopOnFirstError') ~> sink2"
 			]
 		}
 	}
