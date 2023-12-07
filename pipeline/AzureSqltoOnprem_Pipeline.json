@@ -67,6 +67,7 @@
 							"typeProperties": {
 								"source": {
 									"type": "AzureSqlSource",
+									"sqlReaderQuery": "select * from [dbo].[metadata]",
 									"queryTimeout": "02:00:00",
 									"partitionOption": "None"
 								},
@@ -112,7 +113,17 @@
 							"outputs": [
 								{
 									"referenceName": "ds_onprem_SqlServer",
-									"type": "DatasetReference"
+									"type": "DatasetReference",
+									"parameters": {
+										"ds_sink_schema": {
+											"value": "@item().sinkschema",
+											"type": "Expression"
+										},
+										"ds_sink_table": {
+											"value": "@item().sinktable",
+											"type": "Expression"
+										}
+									}
 								}
 							]
 						}
