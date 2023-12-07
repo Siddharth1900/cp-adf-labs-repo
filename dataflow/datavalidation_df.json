@@ -1,0 +1,123 @@
+{
+	"name": "datavalidation_df",
+	"properties": {
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"linkedService": {
+						"referenceName": "ls_adlsgen2",
+						"type": "LinkedServiceReference"
+					},
+					"name": "source"
+				}
+			],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "ds_json",
+						"type": "DatasetReference"
+					},
+					"name": "BadRecordsSink"
+				},
+				{
+					"linkedService": {
+						"referenceName": "ls_adlsgen2_output",
+						"type": "LinkedServiceReference"
+					},
+					"name": "goodRecordsSink"
+				}
+			],
+			"transformations": [
+				{
+					"name": "aggregate1"
+				},
+				{
+					"name": "derivedColumn1"
+				},
+				{
+					"name": "split1"
+				},
+				{
+					"name": "select1"
+				},
+				{
+					"name": "select2"
+				}
+			],
+			"scriptLines": [
+				"source(output(",
+				"          cid as short,",
+				"          {cname } as string,",
+				"          clocation as string,",
+				"          cphno as long,",
+				"          cjoindate as string",
+				"     ),",
+				"     useSchema: false,",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     ignoreNoFilesFound: false,",
+				"     format: 'delimited',",
+				"     fileSystem: 'input',",
+				"     fileName: 'DataQuality.csv',",
+				"     columnDelimiter: ',',",
+				"     escapeChar: '\\\\',",
+				"     quoteChar: '\\\"',",
+				"     columnNamesAsHeader: true) ~> source",
+				"source aggregate(groupBy(cid,",
+				"          {cname },",
+				"          clocation,",
+				"          cphno,",
+				"          cjoindate),",
+				"     DuplicateCheck = count(cid)) ~> aggregate1",
+				"aggregate1 derive(NullCheck = iif(isNull({cname }) || isNull(clocation)  ||isNull(cphno) || isNull(cjoindate),'Yes', 'No'),",
+				"          DateFormatCheck = iif(isDate(cjoindate,'mm/dd/yyyy'),'Yes','No'),",
+				"          {cname } = trim({cname }, ' ')) ~> derivedColumn1",
+				"derivedColumn1 split(DuplicateCheck>1 || NullCheck=='Yes' ||DateFormatCheck =='No',",
+				"     disjoint: false) ~> split1@(BadRecords, GoodRecords)",
+				"split1@BadRecords select(mapColumn(",
+				"          cid,",
+				"          {cname },",
+				"          clocation,",
+				"          cphno,",
+				"          cjoindate",
+				"     ),",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true) ~> select1",
+				"split1@GoodRecords select(mapColumn(",
+				"          cid,",
+				"          {cname },",
+				"          clocation,",
+				"          cphno,",
+				"          cjoindate",
+				"     ),",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true) ~> select2",
+				"select1 sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     partitionFileNames:['BadRecords_Output.json'],",
+				"     umask: 0022,",
+				"     preCommands: [],",
+				"     postCommands: [],",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     partitionBy('hash', 1)) ~> BadRecordsSink",
+				"select2 sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     format: 'delimited',",
+				"     fileSystem: 'output',",
+				"     columnDelimiter: ',',",
+				"     escapeChar: '\\\\',",
+				"     quoteChar: '\\\"',",
+				"     columnNamesAsHeader: false,",
+				"     partitionFileNames:['GoodRecords_output.csv'],",
+				"     umask: 0022,",
+				"     preCommands: [],",
+				"     postCommands: [],",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     partitionBy('hash', 1)) ~> goodRecordsSink"
+			]
+		}
+	}
+}
