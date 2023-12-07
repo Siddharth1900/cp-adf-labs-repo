@@ -43,6 +43,9 @@
 				},
 				{
 					"name": "select2"
+				},
+				{
+					"name": "derivedColumn2"
 				}
 			],
 			"scriptLines": [
@@ -71,16 +74,17 @@
 				"          cjoindate),",
 				"     DuplicateCheck = count(cid)) ~> aggregate1",
 				"aggregate1 derive(NullCheck = iif(isNull({cname }) || isNull(clocation)  ||isNull(cphno) || isNull(cjoindate),'Yes', 'No'),",
-				"          DateFormatCheck = iif(isDate(cjoindate,'mm/dd/yyyy'),'Yes','No'),",
+				"          DateFormatValid = iif(isDate(cjoindate,'mm/dd/yyyy'),'Yes','No'),",
 				"          {cname } = trim({cname }, ' ')) ~> derivedColumn1",
-				"derivedColumn1 split(DuplicateCheck>1 || NullCheck=='Yes' ||DateFormatCheck =='No',",
+				"derivedColumn1 split(DuplicateCheck>1 || NullCheck=='Yes' ||DateFormatValid =='No',",
 				"     disjoint: false) ~> split1@(BadRecords, GoodRecords)",
-				"split1@BadRecords select(mapColumn(",
+				"derivedColumn2 select(mapColumn(",
 				"          cid,",
 				"          {cname },",
 				"          clocation,",
 				"          cphno,",
-				"          cjoindate",
+				"          cjoindate,",
+				"          {Reject Reason}",
 				"     ),",
 				"     skipDuplicateMapInputs: true,",
 				"     skipDuplicateMapOutputs: true) ~> select1",
@@ -93,6 +97,9 @@
 				"     ),",
 				"     skipDuplicateMapInputs: true,",
 				"     skipDuplicateMapOutputs: true) ~> select2",
+				"split1@BadRecords derive({Reject Reason} = concat(iif(DuplicateCheck>1,'Record is Duplicate one',' '),\r",
+				"iif(NullCheck =='Yes','Record is Null',' '),\r",
+				"iif(DateFormatValid =='No','DateFormat is Incorrect',' '))) ~> derivedColumn2",
 				"select1 sink(allowSchemaDrift: true,",
 				"     validateSchema: false,",
 				"     partitionFileNames:['BadRecords_Output.json'],",
