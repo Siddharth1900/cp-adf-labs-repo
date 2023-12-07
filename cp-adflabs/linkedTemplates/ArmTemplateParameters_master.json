@@ -11,8 +11,14 @@
 		"ls_adlsgen2_accountKey": {
 			"value": ""
 		},
+		"ls_adlsgen2_output_accountKey": {
+			"value": ""
+		},
 		"ls_adlsgen2_properties_typeProperties_url": {
 			"value": "https://cpadlsgen21207.dfs.core.windows.net/"
+		},
+		"ls_adlsgen2_output_properties_typeProperties_url": {
+			"value": "https://cpadlsgen21208.dfs.core.windows.net/"
 		},
 		"containerUri": {
 			"value": ""

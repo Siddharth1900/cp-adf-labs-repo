@@ -15,9 +15,17 @@
 			"type": "secureString",
 			"metadata": "Secure string for 'accountKey' of 'ls_adlsgen2'"
 		},
+		"ls_adlsgen2_output_accountKey": {
+			"type": "secureString",
+			"metadata": "Secure string for 'accountKey' of 'ls_adlsgen2_output'"
+		},
 		"ls_adlsgen2_properties_typeProperties_url": {
 			"type": "string",
 			"defaultValue": "https://cpadlsgen21207.dfs.core.windows.net/"
+		},
+		"ls_adlsgen2_output_properties_typeProperties_url": {
+			"type": "string",
+			"defaultValue": "https://cpadlsgen21208.dfs.core.windows.net/"
 		},
 		"containerUri": {
 			"type": "string",
@@ -52,8 +60,14 @@
 					"ls_adlsgen2_accountKey": {
 						"value": "[parameters('ls_adlsgen2_accountKey')]"
 					},
+					"ls_adlsgen2_output_accountKey": {
+						"value": "[parameters('ls_adlsgen2_output_accountKey')]"
+					},
 					"ls_adlsgen2_properties_typeProperties_url": {
 						"value": "[parameters('ls_adlsgen2_properties_typeProperties_url')]"
+					},
+					"ls_adlsgen2_output_properties_typeProperties_url": {
+						"value": "[parameters('ls_adlsgen2_output_properties_typeProperties_url')]"
 					}
 				}
 			},
