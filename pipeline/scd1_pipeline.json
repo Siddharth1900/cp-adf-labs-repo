@@ -20,7 +20,7 @@
 						"type": "DataFlowReference",
 						"parameters": {
 							"df_param_loaddate": {
-								"value": "'@{'2023/12/06'}'",
+								"value": "'@{'2023/12/07'}'",
 								"type": "Expression"
 							}
 						}
