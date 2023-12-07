@@ -19,6 +19,14 @@
 			"type": "secureString",
 			"metadata": "Secure string for 'accountKey' of 'ls_adlsgen2_output'"
 		},
+		"ls_onprem_SqlServer1_connectionString": {
+			"type": "secureString",
+			"metadata": "Secure string for 'connectionString' of 'ls_onprem_SqlServer1'"
+		},
+		"ls_azsqldb_connectionString": {
+			"type": "secureString",
+			"metadata": "Secure string for 'connectionString' of 'ls_azsqldb'"
+		},
 		"ls_adlsgen2_properties_typeProperties_url": {
 			"type": "string",
 			"defaultValue": "https://cpadlsgen21207.dfs.core.windows.net/"
@@ -62,6 +70,12 @@
 					},
 					"ls_adlsgen2_output_accountKey": {
 						"value": "[parameters('ls_adlsgen2_output_accountKey')]"
+					},
+					"ls_azsqldb_connectionString": {
+						"value": "[parameters('ls_azsqldb_connectionString')]"
+					},
+					"ls_onprem_SqlServer1_connectionString": {
+						"value": "[parameters('ls_onprem_SqlServer1_connectionString')]"
 					},
 					"ls_adlsgen2_properties_typeProperties_url": {
 						"value": "[parameters('ls_adlsgen2_properties_typeProperties_url')]"

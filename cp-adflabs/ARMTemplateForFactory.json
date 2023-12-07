@@ -19,6 +19,14 @@
 			"type": "secureString",
 			"metadata": "Secure string for 'accountKey' of 'ls_adlsgen2_output'"
 		},
+		"ls_onprem_SqlServer1_connectionString": {
+			"type": "secureString",
+			"metadata": "Secure string for 'connectionString' of 'ls_onprem_SqlServer1'"
+		},
+		"ls_azsqldb_connectionString": {
+			"type": "secureString",
+			"metadata": "Secure string for 'connectionString' of 'ls_azsqldb'"
+		},
 		"ls_adlsgen2_properties_typeProperties_url": {
 			"type": "string",
 			"defaultValue": "https://cpadlsgen21207.dfs.core.windows.net/"
@@ -32,6 +40,53 @@
 		"factoryId": "[concat('Microsoft.DataFactory/factories/', parameters('factoryName'))]"
 	},
 	"resources": [
+		{
+			"name": "[concat(parameters('factoryName'), '/datavalidation_pipeline')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "Data flow1",
+						"type": "ExecuteDataFlow",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"dataflow": {
+								"referenceName": "datavalidation_df",
+								"type": "DataFlowReference",
+								"parameters": {},
+								"datasetParameters": {
+									"source": {},
+									"BadRecordsSink": {},
+									"goodRecordsSink": {}
+								}
+							},
+							"staging": {},
+							"compute": {
+								"coreCount": 16,
+								"computeType": "General"
+							},
+							"traceLevel": "Fine"
+						}
+					}
+				],
+				"policy": {
+					"elapsedTimeMetric": {}
+				},
+				"annotations": []
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/dataflows/datavalidation_df')]"
+			]
+		},
 		{
 			"name": "[concat(parameters('factoryName'), '/scd1_pipeline')]",
 			"type": "Microsoft.DataFactory/factories/pipelines",
@@ -65,8 +120,7 @@
 									"target": {},
 									"sink1": {},
 									"sink2": {}
-								},
-								"linkedServiceParameters": {}
+								}
 							},
 							"staging": {},
 							"compute": {
@@ -153,6 +207,29 @@
 			]
 		},
 		{
+			"name": "[concat(parameters('factoryName'), '/ds_json')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "ls_adlsgen2_output",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "Json",
+				"typeProperties": {
+					"location": {
+						"type": "AzureBlobFSLocation",
+						"fileSystem": "output"
+					}
+				},
+				"schema": {}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/ls_adlsgen2_output')]"
+			]
+		},
+		{
 			"name": "[concat(parameters('factoryName'), '/ls_AzureSqlDatabase1')]",
 			"type": "Microsoft.DataFactory/factories/linkedServices",
 			"apiVersion": "2018-06-01",
@@ -181,6 +258,160 @@
 				}
 			},
 			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/ls_adlsgen2_output')]",
+			"type": "Microsoft.DataFactory/factories/linkedServices",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"annotations": [],
+				"type": "AzureBlobFS",
+				"typeProperties": {
+					"url": "[parameters('ls_adlsgen2_output_properties_typeProperties_url')]",
+					"accountKey": {
+						"type": "SecureString",
+						"value": "[parameters('ls_adlsgen2_output_accountKey')]"
+					}
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/datavalidation_df')]",
+			"type": "Microsoft.DataFactory/factories/dataflows",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"type": "MappingDataFlow",
+				"typeProperties": {
+					"sources": [
+						{
+							"linkedService": {
+								"referenceName": "ls_adlsgen2",
+								"type": "LinkedServiceReference"
+							},
+							"name": "source"
+						}
+					],
+					"sinks": [
+						{
+							"dataset": {
+								"referenceName": "ds_json",
+								"type": "DatasetReference"
+							},
+							"name": "BadRecordsSink"
+						},
+						{
+							"linkedService": {
+								"referenceName": "ls_adlsgen2_output",
+								"type": "LinkedServiceReference"
+							},
+							"name": "goodRecordsSink"
+						}
+					],
+					"transformations": [
+						{
+							"name": "aggregate1"
+						},
+						{
+							"name": "derivedColumn1"
+						},
+						{
+							"name": "split1"
+						},
+						{
+							"name": "select1"
+						},
+						{
+							"name": "select2"
+						},
+						{
+							"name": "derivedColumn2"
+						}
+					],
+					"scriptLines": [
+						"source(output(",
+						"          cid as short,",
+						"          {cname } as string,",
+						"          clocation as string,",
+						"          cphno as long,",
+						"          cjoindate as string",
+						"     ),",
+						"     useSchema: false,",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     ignoreNoFilesFound: false,",
+						"     format: 'delimited',",
+						"     fileSystem: 'input',",
+						"     fileName: 'DataQuality.csv',",
+						"     columnDelimiter: ',',",
+						"     escapeChar: '\\\\',",
+						"     quoteChar: '\\\"',",
+						"     columnNamesAsHeader: true) ~> source",
+						"source aggregate(groupBy(cid,",
+						"          {cname },",
+						"          clocation,",
+						"          cphno,",
+						"          cjoindate),",
+						"     DuplicateCheck = count(cid)) ~> aggregate1",
+						"aggregate1 derive(NullCheck = iif(isNull({cname }) || isNull(clocation)  ||isNull(cphno) || isNull(cjoindate),'Yes', 'No'),",
+						"          DateFormatValid = iif(isDate(cjoindate,'mm/dd/yyyy'),'Yes','No'),",
+						"          {cname } = trim({cname }, ' ')) ~> derivedColumn1",
+						"derivedColumn1 split(DuplicateCheck>1 || NullCheck=='Yes' ||DateFormatValid =='No',",
+						"     disjoint: false) ~> split1@(BadRecords, GoodRecords)",
+						"derivedColumn2 select(mapColumn(",
+						"          cid,",
+						"          {cname },",
+						"          clocation,",
+						"          cphno,",
+						"          cjoindate,",
+						"          {Reject Reason}",
+						"     ),",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true) ~> select1",
+						"split1@GoodRecords select(mapColumn(",
+						"          cid,",
+						"          {cname },",
+						"          clocation,",
+						"          cphno,",
+						"          cjoindate",
+						"     ),",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true) ~> select2",
+						"split1@BadRecords derive({Reject Reason} = concat(iif(DuplicateCheck>1,'Record is Duplicate one',' '),\r",
+						"iif(NullCheck =='Yes','Record is Null',' '),\r",
+						"iif(DateFormatValid =='No','DateFormat is Incorrect',' '))) ~> derivedColumn2",
+						"select1 sink(allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     partitionFileNames:['BadRecords_Output.json'],",
+						"     umask: 0022,",
+						"     preCommands: [],",
+						"     postCommands: [],",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true,",
+						"     partitionBy('hash', 1)) ~> BadRecordsSink",
+						"select2 sink(allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     format: 'delimited',",
+						"     fileSystem: 'output',",
+						"     columnDelimiter: ',',",
+						"     escapeChar: '\\\\',",
+						"     quoteChar: '\\\"',",
+						"     columnNamesAsHeader: false,",
+						"     partitionFileNames:['GoodRecords_output.csv'],",
+						"     umask: 0022,",
+						"     preCommands: [],",
+						"     postCommands: [],",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true,",
+						"     partitionBy('hash', 1)) ~> goodRecordsSink"
+					]
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/ls_adlsgen2')]",
+				"[concat(variables('factoryId'), '/datasets/ds_json')]",
+				"[concat(variables('factoryId'), '/linkedServices/ls_adlsgen2_output')]"
+			]
 		},
 		{
 			"name": "[concat(parameters('factoryName'), '/scd1')]",
@@ -389,191 +620,114 @@
 			]
 		},
 		{
-			"name": "[concat(parameters('factoryName'), '/ls_adlsgen2_output')]",
-			"type": "Microsoft.DataFactory/factories/linkedServices",
+			"name": "[concat(parameters('factoryName'), '/onpremIR')]",
+			"type": "Microsoft.DataFactory/factories/integrationRuntimes",
 			"apiVersion": "2018-06-01",
 			"properties": {
-				"annotations": [],
-				"type": "AzureBlobFS",
-				"typeProperties": {
-					"url": "[parameters('ls_adlsgen2_output_properties_typeProperties_url')]",
-					"accountKey": {
-						"type": "SecureString",
-						"value": "[parameters('ls_adlsgen2_output_accountKey')]"
-					}
-				}
+				"type": "SelfHosted",
+				"typeProperties": {}
 			},
 			"dependsOn": []
 		},
 		{
-			"name": "[concat(parameters('factoryName'), '/ds_json')]",
+			"name": "[concat(parameters('factoryName'), '/ds_azuresqldb')]",
 			"type": "Microsoft.DataFactory/factories/datasets",
 			"apiVersion": "2018-06-01",
 			"properties": {
 				"linkedServiceName": {
-					"referenceName": "ls_adlsgen2_output",
+					"referenceName": "ls_azsqldb",
 					"type": "LinkedServiceReference"
 				},
-				"annotations": [],
-				"type": "Json",
-				"typeProperties": {
-					"location": {
-						"type": "AzureBlobFSLocation",
-						"fileSystem": "output"
+				"parameters": {
+					"ds_param_schema": {
+						"type": "string"
+					},
+					"ds_param_table": {
+						"type": "string"
 					}
 				},
-				"schema": {}
-			},
-			"dependsOn": [
-				"[concat(variables('factoryId'), '/linkedServices/ls_adlsgen2_output')]"
-			]
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/datavalidation_df')]",
-			"type": "Microsoft.DataFactory/factories/dataflows",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"type": "MappingDataFlow",
+				"annotations": [],
+				"type": "AzureSqlTable",
+				"schema": [],
 				"typeProperties": {
-					"sources": [
-						{
-							"linkedService": {
-								"referenceName": "ls_adlsgen2",
-								"type": "LinkedServiceReference"
-							},
-							"name": "source"
-						}
-					],
-					"sinks": [
-						{
-							"dataset": {
-								"referenceName": "ds_json",
-								"type": "DatasetReference"
-							},
-							"name": "BadRecordsSink"
-						},
-						{
-							"linkedService": {
-								"referenceName": "ls_adlsgen2_output",
-								"type": "LinkedServiceReference"
-							},
-							"name": "goodRecordsSink"
-						}
-					],
-					"transformations": [
-						{
-							"name": "aggregate1"
-						},
-						{
-							"name": "derivedColumn1"
-						},
-						{
-							"name": "split1"
-						},
-						{
-							"name": "select1"
-						},
-						{
-							"name": "select2"
-						},
-						{
-							"name": "derivedColumn2"
-						}
-					],
-					"scriptLines": [
-						"source(output(",
-						"          cid as short,",
-						"          {cname } as string,",
-						"          clocation as string,",
-						"          cphno as long,",
-						"          cjoindate as string",
-						"     ),",
-						"     useSchema: false,",
-						"     allowSchemaDrift: true,",
-						"     validateSchema: false,",
-						"     ignoreNoFilesFound: false,",
-						"     format: 'delimited',",
-						"     fileSystem: 'input',",
-						"     fileName: 'DataQuality.csv',",
-						"     columnDelimiter: ',',",
-						"     escapeChar: '\\\\',",
-						"     quoteChar: '\\\"',",
-						"     columnNamesAsHeader: true) ~> source",
-						"source aggregate(groupBy(cid,",
-						"          {cname },",
-						"          clocation,",
-						"          cphno,",
-						"          cjoindate),",
-						"     DuplicateCheck = count(cid)) ~> aggregate1",
-						"aggregate1 derive(NullCheck = iif(isNull({cname }) || isNull(clocation)  ||isNull(cphno) || isNull(cjoindate),'Yes', 'No'),",
-						"          DateFormatValid = iif(isDate(cjoindate,'mm/dd/yyyy'),'Yes','No'),",
-						"          {cname } = trim({cname }, ' ')) ~> derivedColumn1",
-						"derivedColumn1 split(DuplicateCheck>1 || NullCheck=='Yes' ||DateFormatValid =='No',",
-						"     disjoint: false) ~> split1@(BadRecords, GoodRecords)",
-						"derivedColumn2 select(mapColumn(",
-						"          cid,",
-						"          {cname },",
-						"          clocation,",
-						"          cphno,",
-						"          cjoindate,",
-						"          {Reject Reason}",
-						"     ),",
-						"     skipDuplicateMapInputs: true,",
-						"     skipDuplicateMapOutputs: true) ~> select1",
-						"split1@GoodRecords select(mapColumn(",
-						"          cid,",
-						"          {cname },",
-						"          clocation,",
-						"          cphno,",
-						"          cjoindate",
-						"     ),",
-						"     skipDuplicateMapInputs: true,",
-						"     skipDuplicateMapOutputs: true) ~> select2",
-						"split1@BadRecords derive({Reject Reason} = concat(iif(DuplicateCheck>1,'Record is Duplicate one',' '),\r",
-						"iif(NullCheck =='Yes','Record is Null',' '),\r",
-						"iif(DateFormatValid =='No','DateFormat is Incorrect',' '))) ~> derivedColumn2",
-						"select1 sink(allowSchemaDrift: true,",
-						"     validateSchema: false,",
-						"     partitionFileNames:['BadRecords_Output.json'],",
-						"     umask: 0022,",
-						"     preCommands: [],",
-						"     postCommands: [],",
-						"     skipDuplicateMapInputs: true,",
-						"     skipDuplicateMapOutputs: true,",
-						"     partitionBy('hash', 1)) ~> BadRecordsSink",
-						"select2 sink(allowSchemaDrift: true,",
-						"     validateSchema: false,",
-						"     format: 'delimited',",
-						"     fileSystem: 'output',",
-						"     columnDelimiter: ',',",
-						"     escapeChar: '\\\\',",
-						"     quoteChar: '\\\"',",
-						"     columnNamesAsHeader: false,",
-						"     partitionFileNames:['GoodRecords_output.csv'],",
-						"     umask: 0022,",
-						"     preCommands: [],",
-						"     postCommands: [],",
-						"     skipDuplicateMapInputs: true,",
-						"     skipDuplicateMapOutputs: true,",
-						"     partitionBy('hash', 1)) ~> goodRecordsSink"
-					]
+					"schema": {
+						"value": "@dataset().ds_param_schema",
+						"type": "Expression"
+					},
+					"table": {
+						"value": "@dataset().ds_param_table",
+						"type": "Expression"
+					}
 				}
 			},
 			"dependsOn": [
-				"[concat(variables('factoryId'), '/linkedServices/ls_adlsgen2')]",
-				"[concat(variables('factoryId'), '/datasets/ds_json')]",
-				"[concat(variables('factoryId'), '/linkedServices/ls_adlsgen2_output')]"
+				"[concat(variables('factoryId'), '/linkedServices/ls_azsqldb')]"
 			]
 		},
 		{
-			"name": "[concat(parameters('factoryName'), '/datavalidation_pipeline')]",
+			"name": "[concat(parameters('factoryName'), '/ls_onprem_SqlServer1')]",
+			"type": "Microsoft.DataFactory/factories/linkedServices",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"annotations": [],
+				"type": "SqlServer",
+				"typeProperties": {
+					"connectionString": "[parameters('ls_onprem_SqlServer1_connectionString')]"
+				},
+				"connectVia": {
+					"referenceName": "onpremIR",
+					"type": "IntegrationRuntimeReference"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/integrationRuntimes/onpremIR')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/ds_onprem_SqlServer')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "ls_onprem_SqlServer1",
+					"type": "LinkedServiceReference"
+				},
+				"parameters": {
+					"ds_sink_schema": {
+						"type": "string"
+					},
+					"ds_sink_table": {
+						"type": "string"
+					}
+				},
+				"annotations": [],
+				"type": "SqlServerTable",
+				"schema": [],
+				"typeProperties": {
+					"schema": {
+						"value": "@dataset().ds_sink_schema",
+						"type": "Expression"
+					},
+					"table": {
+						"value": "@dataset().ds_sink_table",
+						"type": "Expression"
+					}
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/ls_onprem_SqlServer1')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/AzureSqltoOnprem_Pipeline')]",
 			"type": "Microsoft.DataFactory/factories/pipelines",
 			"apiVersion": "2018-06-01",
 			"properties": {
+				"description": "Azure Sql Db to onprem sql db Data ingestion",
 				"activities": [
 					{
-						"name": "Data flow1",
-						"type": "ExecuteDataFlow",
+						"name": "Lookup1",
+						"type": "Lookup",
 						"dependsOn": [],
 						"policy": {
 							"timeout": "0.12:00:00",
@@ -584,22 +738,117 @@
 						},
 						"userProperties": [],
 						"typeProperties": {
-							"dataflow": {
-								"referenceName": "datavalidation_df",
-								"type": "DataFlowReference",
-								"parameters": {},
-								"datasetParameters": {
-									"source": {},
-									"BadRecordsSink": {},
-									"goodRecordsSink": {}
+							"source": {
+								"type": "AzureSqlSource",
+								"sqlReaderQuery": "select * from [dbo].[metadata]",
+								"queryTimeout": "02:00:00",
+								"partitionOption": "None"
+							},
+							"dataset": {
+								"referenceName": "ds_azuresqldb",
+								"type": "DatasetReference",
+								"parameters": {
+									"ds_param_schema": "dbo",
+									"ds_param_table": "metadata"
 								}
 							},
-							"staging": {},
-							"compute": {
-								"coreCount": 16,
-								"computeType": "General"
+							"firstRowOnly": false
+						}
+					},
+					{
+						"name": "ForEach1",
+						"type": "ForEach",
+						"dependsOn": [
+							{
+								"activity": "Lookup1",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"userProperties": [],
+						"typeProperties": {
+							"items": {
+								"value": "@activity('Lookup1').output.value",
+								"type": "Expression"
 							},
-							"traceLevel": "Fine"
+							"isSequential": true,
+							"activities": [
+								{
+									"name": "Copy data1",
+									"type": "Copy",
+									"dependsOn": [],
+									"policy": {
+										"timeout": "0.12:00:00",
+										"retry": 0,
+										"retryIntervalInSeconds": 30,
+										"secureOutput": false,
+										"secureInput": false
+									},
+									"userProperties": [],
+									"typeProperties": {
+										"source": {
+											"type": "AzureSqlSource",
+											"queryTimeout": "02:00:00",
+											"partitionOption": "None"
+										},
+										"sink": {
+											"type": "SqlServerSink",
+											"writeBehavior": "insert",
+											"sqlWriterUseTableLock": false,
+											"tableOption": "autoCreate"
+										},
+										"enableStaging": true,
+										"stagingSettings": {
+											"linkedServiceName": {
+												"referenceName": "ls_adlsgen2_output",
+												"type": "LinkedServiceReference"
+											},
+											"path": "staging-area"
+										},
+										"translator": {
+											"type": "TabularTranslator",
+											"typeConversion": true,
+											"typeConversionSettings": {
+												"allowDataTruncation": true,
+												"treatBooleanAsNumber": false
+											}
+										}
+									},
+									"inputs": [
+										{
+											"referenceName": "ds_azuresqldb",
+											"type": "DatasetReference",
+											"parameters": {
+												"ds_param_schema": {
+													"value": "@item().srcschema",
+													"type": "Expression"
+												},
+												"ds_param_table": {
+													"value": "@item().srctable",
+													"type": "Expression"
+												}
+											}
+										}
+									],
+									"outputs": [
+										{
+											"referenceName": "ds_onprem_SqlServer",
+											"type": "DatasetReference",
+											"parameters": {
+												"ds_sink_schema": {
+													"value": "@item().sinkschema",
+													"type": "Expression"
+												},
+												"ds_sink_table": {
+													"value": "@item().sinktable",
+													"type": "Expression"
+												}
+											}
+										}
+									]
+								}
+							]
 						}
 					}
 				],
@@ -609,8 +858,23 @@
 				"annotations": []
 			},
 			"dependsOn": [
-				"[concat(variables('factoryId'), '/dataflows/datavalidation_df')]"
+				"[concat(variables('factoryId'), '/datasets/ds_azuresqldb')]",
+				"[concat(variables('factoryId'), '/datasets/ds_onprem_SqlServer')]",
+				"[concat(variables('factoryId'), '/linkedServices/ls_adlsgen2_output')]"
 			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/ls_azsqldb')]",
+			"type": "Microsoft.DataFactory/factories/linkedServices",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"annotations": [],
+				"type": "AzureSqlDatabase",
+				"typeProperties": {
+					"connectionString": "[parameters('ls_azsqldb_connectionString')]"
+				}
+			},
+			"dependsOn": []
 		}
 	]
 }
