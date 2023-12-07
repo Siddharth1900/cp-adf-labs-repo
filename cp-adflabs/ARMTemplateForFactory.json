@@ -48,7 +48,7 @@
 								"type": "DataFlowReference",
 								"parameters": {
 									"df_param_loaddate": {
-										"value": "'@{'2023/12/06'}'",
+										"value": "'@{'2023/12/07'}'",
 										"type": "Expression"
 									}
 								},
@@ -57,7 +57,8 @@
 									"target": {},
 									"sink1": {},
 									"sink2": {}
-								}
+								},
+								"linkedServiceParameters": {}
 							},
 							"staging": {},
 							"compute": {
@@ -301,9 +302,7 @@
 						"          created_on = currentTimestamp(),",
 						"          updated_by = 'dataflow',",
 						"          updated_on = currentTimestamp()) ~> derivedColumn2",
-						"split1@UpdatedRecords derive(created_by = 'dataflow',",
-						"          created_on = currentTimestamp(),",
-						"          updated_by = 'dataflow',",
+						"split1@UpdatedRecords derive(updated_by = 'dataflow',",
 						"          updated_on = currentTimestamp()) ~> derivedColumn3",
 						"derivedColumn3 alterRow(updateIf(1==1)) ~> alterRow2",
 						"split1@NewRecords select(mapColumn(",
