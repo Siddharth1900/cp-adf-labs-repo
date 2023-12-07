@@ -176,14 +176,25 @@
 				"alterRow2 sink(allowSchemaDrift: true,",
 				"     validateSchema: false,",
 				"     deletable:false,",
-				"     insertable:false,",
+				"     insertable:true,",
 				"     updateable:true,",
 				"     upsertable:false,",
 				"     keys:['cid'],",
 				"     format: 'table',",
 				"     skipDuplicateMapInputs: true,",
 				"     skipDuplicateMapOutputs: true,",
-				"     errorHandlingOption: 'stopOnFirstError') ~> sink2"
+				"     errorHandlingOption: 'stopOnFirstError',",
+				"     mapColumn(",
+				"          surrogate_key = src_surrogate_key,",
+				"          cid = src_cid,",
+				"          {cname } = {src_cname },",
+				"          clocation = src_clocation,",
+				"          cphno = src_cphno,",
+				"          created_by,",
+				"          created_on,",
+				"          updated_by,",
+				"          updated_on",
+				"     )) ~> sink2"
 			]
 		}
 	}
