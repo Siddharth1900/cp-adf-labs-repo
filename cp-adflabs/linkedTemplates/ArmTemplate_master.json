@@ -19,13 +19,13 @@
 			"type": "secureString",
 			"metadata": "Secure string for 'accountKey' of 'ls_adlsgen2_output'"
 		},
-		"ls_onprem_SqlServer1_connectionString": {
-			"type": "secureString",
-			"metadata": "Secure string for 'connectionString' of 'ls_onprem_SqlServer1'"
-		},
 		"ls_azsqldb_connectionString": {
 			"type": "secureString",
 			"metadata": "Secure string for 'connectionString' of 'ls_azsqldb'"
+		},
+		"ls_onprem_SqlServer1_connectionString": {
+			"type": "secureString",
+			"metadata": "Secure string for 'connectionString' of 'ls_onprem_SqlServer1'"
 		},
 		"ls_adlsgen2_properties_typeProperties_url": {
 			"type": "string",

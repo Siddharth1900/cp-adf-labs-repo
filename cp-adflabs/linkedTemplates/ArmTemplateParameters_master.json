@@ -14,10 +14,10 @@
 		"ls_adlsgen2_output_accountKey": {
 			"value": ""
 		},
-		"ls_onprem_SqlServer1_connectionString": {
+		"ls_azsqldb_connectionString": {
 			"value": ""
 		},
-		"ls_azsqldb_connectionString": {
+		"ls_onprem_SqlServer1_connectionString": {
 			"value": ""
 		},
 		"ls_adlsgen2_properties_typeProperties_url": {
