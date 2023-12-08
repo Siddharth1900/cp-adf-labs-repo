@@ -6,7 +6,7 @@
 			"type": "LinkedServiceReference"
 		},
 		"parameters": {
-			"ds_param_sourcedata": {
+			"ds_param_sourcedate": {
 				"type": "string"
 			}
 		},
@@ -16,7 +16,7 @@
 			"location": {
 				"type": "AzureBlobFSLocation",
 				"folderPath": {
-					"value": "@dataset().ds_param_sourcedata",
+					"value": "@dataset().ds_param_sourcedate",
 					"type": "Expression"
 				},
 				"fileSystem": "test-cont"
