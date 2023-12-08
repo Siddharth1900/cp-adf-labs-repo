@@ -16,7 +16,7 @@
 			"location": {
 				"type": "AzureBlobFSLocation",
 				"folderPath": {
-					"value": "@dataset().ds_param_sourcedate",
+					"value": "@substring(replace(dataset().ds_param_sourcedate,'-','/'),0,10)",
 					"type": "Expression"
 				},
 				"fileSystem": "test-cont"
