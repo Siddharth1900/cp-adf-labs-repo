@@ -1,0 +1,29 @@
+{
+	"name": "Tumbling_Window_trigger",
+	"properties": {
+		"annotations": [],
+		"runtimeState": "Started",
+		"pipelines": [
+			{
+				"pipelineReference": {
+					"referenceName": "Tumbling_Window_Pipeline",
+					"type": "PipelineReference"
+				},
+				"parameters": {
+					"pl_param_windowStartDate": "@triggerOutputs().windowStartTime",
+					"pl_param_windowEndDate": "@trigger().outputs.windowEndTime"
+				}
+			}
+		],
+		"type": "ScheduleTrigger",
+		"typeProperties": {
+			"recurrence": {
+				"frequency": "Hour",
+				"interval": 24,
+				"startTime": "2022-12-02T16:00:00",
+				"endTime": "2023-12-11T16:00:00",
+				"timeZone": "India Standard Time"
+			}
+		}
+	}
+}
