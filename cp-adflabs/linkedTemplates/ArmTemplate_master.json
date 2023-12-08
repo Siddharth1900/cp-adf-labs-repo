@@ -35,6 +35,14 @@
 			"type": "string",
 			"defaultValue": "https://cpadlsgen21208.dfs.core.windows.net/"
 		},
+		"Tumbling_Window_trigger_properties_Tumbling_Window_Pipeline_parameters_pl_param_windowStartDate": {
+			"type": "string",
+			"defaultValue": "@triggerOutputs().windowStartTime"
+		},
+		"Tumbling_Window_trigger_properties_Tumbling_Window_Pipeline_parameters_pl_param_windowEndDate": {
+			"type": "string",
+			"defaultValue": "@trigger().outputs.windowEndTime"
+		},
 		"containerUri": {
 			"type": "string",
 			"metadata": "URI to storage account containing linked ARM templates"
@@ -82,6 +90,12 @@
 					},
 					"ls_adlsgen2_output_properties_typeProperties_url": {
 						"value": "[parameters('ls_adlsgen2_output_properties_typeProperties_url')]"
+					},
+					"Tumbling_Window_trigger_properties_Tumbling_Window_Pipeline_parameters_pl_param_windowStartDate": {
+						"value": "[parameters('Tumbling_Window_trigger_properties_Tumbling_Window_Pipeline_parameters_pl_param_windowStartDate')]"
+					},
+					"Tumbling_Window_trigger_properties_Tumbling_Window_Pipeline_parameters_pl_param_windowEndDate": {
+						"value": "[parameters('Tumbling_Window_trigger_properties_Tumbling_Window_Pipeline_parameters_pl_param_windowEndDate')]"
 					}
 				}
 			},

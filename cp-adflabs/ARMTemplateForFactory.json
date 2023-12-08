@@ -34,6 +34,14 @@
 		"ls_adlsgen2_output_properties_typeProperties_url": {
 			"type": "string",
 			"defaultValue": "https://cpadlsgen21208.dfs.core.windows.net/"
+		},
+		"Tumbling_Window_trigger_properties_Tumbling_Window_Pipeline_parameters_pl_param_windowStartDate": {
+			"type": "string",
+			"defaultValue": "@triggerOutputs().windowStartTime"
+		},
+		"Tumbling_Window_trigger_properties_Tumbling_Window_Pipeline_parameters_pl_param_windowEndDate": {
+			"type": "string",
+			"defaultValue": "@trigger().outputs.windowEndTime"
 		}
 	},
 	"variables": {
@@ -235,7 +243,7 @@
 								"type": "DatasetReference",
 								"parameters": {
 									"ds_param_sourcedate": {
-										"value": "@pipeline().parameters.pl_param_sourcedate",
+										"value": "@pipeline().parameters.pl_param_windowStartDate",
 										"type": "Expression"
 									}
 								}
@@ -247,7 +255,7 @@
 								"type": "DatasetReference",
 								"parameters": {
 									"ds_param_sinkdate": {
-										"value": "@pipeline().parameters.pl_param_sourcedate",
+										"value": "@pipeline().parameters.pl_param_windowEndDate",
 										"type": "Expression"
 									}
 								}
@@ -259,7 +267,10 @@
 					"elapsedTimeMetric": {}
 				},
 				"parameters": {
-					"pl_param_sourcedate": {
+					"pl_param_windowStartDate": {
+						"type": "string"
+					},
+					"pl_param_windowEndDate": {
 						"type": "string"
 					}
 				},
@@ -1052,6 +1063,40 @@
 				"[concat(variables('factoryId'), '/linkedServices/ls_adlsgen2')]",
 				"[concat(variables('factoryId'), '/linkedServices/ls_AzureSqlDatabase1')]",
 				"[concat(variables('factoryId'), '/datasets/AzureSqlTable1')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/Tumbling_Window_trigger')]",
+			"type": "Microsoft.DataFactory/factories/triggers",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"annotations": [],
+				"runtimeState": "Started",
+				"pipelines": [
+					{
+						"pipelineReference": {
+							"referenceName": "Tumbling_Window_Pipeline",
+							"type": "PipelineReference"
+						},
+						"parameters": {
+							"pl_param_windowStartDate": "[parameters('Tumbling_Window_trigger_properties_Tumbling_Window_Pipeline_parameters_pl_param_windowStartDate')]",
+							"pl_param_windowEndDate": "[parameters('Tumbling_Window_trigger_properties_Tumbling_Window_Pipeline_parameters_pl_param_windowEndDate')]"
+						}
+					}
+				],
+				"type": "ScheduleTrigger",
+				"typeProperties": {
+					"recurrence": {
+						"frequency": "Hour",
+						"interval": 24,
+						"startTime": "2022-12-02T16:00:00",
+						"endTime": "2023-12-11T16:00:00",
+						"timeZone": "India Standard Time"
+					}
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/pipelines/Tumbling_Window_Pipeline')]"
 			]
 		}
 	]
