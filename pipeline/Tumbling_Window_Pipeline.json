@@ -20,7 +20,6 @@
 						"storeSettings": {
 							"type": "AzureBlobFSReadSettings",
 							"recursive": true,
-							"wildcardFileName": "*",
 							"enablePartitionDiscovery": false
 						},
 						"formatSettings": {
@@ -52,17 +51,34 @@
 				"inputs": [
 					{
 						"referenceName": "ds_adlsgen2_input",
-						"type": "DatasetReference"
+						"type": "DatasetReference",
+						"parameters": {
+							"ds_param_sourcedata": {
+								"value": "@pipeline().parameters.pl_param_sourcedate",
+								"type": "Expression"
+							}
+						}
 					}
 				],
 				"outputs": [
 					{
 						"referenceName": "ds_adlsgen2_output",
-						"type": "DatasetReference"
+						"type": "DatasetReference",
+						"parameters": {
+							"ds_param_sinkdate": {
+								"value": "@pipeline().parameters.pl_param_sourcedate",
+								"type": "Expression"
+							}
+						}
 					}
 				]
 			}
 		],
+		"parameters": {
+			"pl_param_sourcedate": {
+				"type": "string"
+			}
+		},
 		"annotations": []
 	}
 }
