@@ -75,14 +75,7 @@
 									"sqlWriterUseTableLock": false,
 									"tableOption": "autoCreate"
 								},
-								"enableStaging": true,
-								"stagingSettings": {
-									"linkedServiceName": {
-										"referenceName": "ls_adlsgen2_output",
-										"type": "LinkedServiceReference"
-									},
-									"path": "staging-area"
-								},
+								"enableStaging": false,
 								"translator": {
 									"type": "TabularTranslator",
 									"typeConversion": true,
