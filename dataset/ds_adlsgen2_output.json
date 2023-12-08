@@ -16,7 +16,7 @@
 			"location": {
 				"type": "AzureBlobFSLocation",
 				"folderPath": {
-					"value": "@dataset().ds_param_sinkdate",
+					"value": "@substring(replace(dataset().ds_param_sinkdate,'-','/'),0,10)",
 					"type": "Expression"
 				},
 				"fileSystem": "workingarea"
