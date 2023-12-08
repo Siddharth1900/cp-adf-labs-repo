@@ -26,10 +26,10 @@
 		"ls_adlsgen2_output_properties_typeProperties_url": {
 			"value": "https://cpadlsgen21208.dfs.core.windows.net/"
 		},
-		"Tumbling_Window_trigger_properties_Tumbling_Window_Pipeline_parameters_pl_param_windowStartDate": {
-			"value": "@triggerOutputs().windowStartTime"
+		"tmb_trigger1_properties_pipeline_parameters_pl_param_windowStartDate": {
+			"value": "@trigger().outputs.windowStartTime"
 		},
-		"Tumbling_Window_trigger_properties_Tumbling_Window_Pipeline_parameters_pl_param_windowEndDate": {
+		"tmb_trigger1_properties_pipeline_parameters_pl_param_windowEndDate": {
 			"value": "@trigger().outputs.windowEndTime"
 		}
 	}

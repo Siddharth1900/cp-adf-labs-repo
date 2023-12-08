@@ -35,11 +35,11 @@
 			"type": "string",
 			"defaultValue": "https://cpadlsgen21208.dfs.core.windows.net/"
 		},
-		"Tumbling_Window_trigger_properties_Tumbling_Window_Pipeline_parameters_pl_param_windowStartDate": {
+		"tmb_trigger1_properties_pipeline_parameters_pl_param_windowStartDate": {
 			"type": "string",
-			"defaultValue": "@triggerOutputs().windowStartTime"
+			"defaultValue": "@trigger().outputs.windowStartTime"
 		},
-		"Tumbling_Window_trigger_properties_Tumbling_Window_Pipeline_parameters_pl_param_windowEndDate": {
+		"tmb_trigger1_properties_pipeline_parameters_pl_param_windowEndDate": {
 			"type": "string",
 			"defaultValue": "@trigger().outputs.windowEndTime"
 		}
@@ -224,7 +224,7 @@
 								"formatSettings": {
 									"type": "DelimitedTextWriteSettings",
 									"quoteAllText": true,
-									"fileExtension": ".txt"
+									"fileExtension": ".csv"
 								}
 							},
 							"enableStaging": false,
@@ -1066,33 +1066,34 @@
 			]
 		},
 		{
-			"name": "[concat(parameters('factoryName'), '/Tumbling_Window_trigger')]",
+			"name": "[concat(parameters('factoryName'), '/tmb_trigger1')]",
 			"type": "Microsoft.DataFactory/factories/triggers",
 			"apiVersion": "2018-06-01",
 			"properties": {
 				"annotations": [],
 				"runtimeState": "Started",
-				"pipelines": [
-					{
-						"pipelineReference": {
-							"referenceName": "Tumbling_Window_Pipeline",
-							"type": "PipelineReference"
-						},
-						"parameters": {
-							"pl_param_windowStartDate": "[parameters('Tumbling_Window_trigger_properties_Tumbling_Window_Pipeline_parameters_pl_param_windowStartDate')]",
-							"pl_param_windowEndDate": "[parameters('Tumbling_Window_trigger_properties_Tumbling_Window_Pipeline_parameters_pl_param_windowEndDate')]"
-						}
+				"pipeline": {
+					"pipelineReference": {
+						"referenceName": "Tumbling_Window_Pipeline",
+						"type": "PipelineReference"
+					},
+					"parameters": {
+						"pl_param_windowStartDate": "[parameters('tmb_trigger1_properties_pipeline_parameters_pl_param_windowStartDate')]",
+						"pl_param_windowEndDate": "[parameters('tmb_trigger1_properties_pipeline_parameters_pl_param_windowEndDate')]"
 					}
-				],
-				"type": "ScheduleTrigger",
+				},
+				"type": "TumblingWindowTrigger",
 				"typeProperties": {
-					"recurrence": {
-						"frequency": "Hour",
-						"interval": 24,
-						"startTime": "2022-12-02T16:00:00",
-						"endTime": "2023-12-11T16:00:00",
-						"timeZone": "India Standard Time"
-					}
+					"frequency": "Hour",
+					"interval": 24,
+					"startTime": "2022-12-02T16:28:00Z",
+					"endTime": "2022-12-11T16:28:00Z",
+					"delay": "00:00:00",
+					"maxConcurrency": 50,
+					"retryPolicy": {
+						"intervalInSeconds": 30
+					},
+					"dependsOn": []
 				}
 			},
 			"dependsOn": [
