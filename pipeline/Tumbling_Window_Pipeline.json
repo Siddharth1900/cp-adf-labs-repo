@@ -55,7 +55,7 @@
 						"type": "DatasetReference",
 						"parameters": {
 							"ds_param_sourcedate": {
-								"value": "@pipeline().parameters.pl_param_sourcedate",
+								"value": "@pipeline().parameters.pl_param_windowStartDate",
 								"type": "Expression"
 							}
 						}
@@ -67,7 +67,7 @@
 						"type": "DatasetReference",
 						"parameters": {
 							"ds_param_sinkdate": {
-								"value": "@pipeline().parameters.pl_param_sourcedate",
+								"value": "@pipeline().parameters.pl_param_windowEndDate",
 								"type": "Expression"
 							}
 						}
@@ -76,7 +76,10 @@
 			}
 		],
 		"parameters": {
-			"pl_param_sourcedate": {
+			"pl_param_windowStartDate": {
+				"type": "string"
+			},
+			"pl_param_windowEndDate": {
 				"type": "string"
 			}
 		},
