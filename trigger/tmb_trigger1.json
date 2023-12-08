@@ -1,0 +1,30 @@
+{
+	"name": "tmb_trigger1",
+	"properties": {
+		"annotations": [],
+		"runtimeState": "Started",
+		"pipeline": {
+			"pipelineReference": {
+				"referenceName": "Tumbling_Window_Pipeline",
+				"type": "PipelineReference"
+			},
+			"parameters": {
+				"pl_param_windowStartDate": "@trigger().outputs.windowStartTime",
+				"pl_param_windowEndDate": "@trigger().outputs.windowEndTime"
+			}
+		},
+		"type": "TumblingWindowTrigger",
+		"typeProperties": {
+			"frequency": "Hour",
+			"interval": 24,
+			"startTime": "2022-12-02T16:28:00Z",
+			"endTime": "2022-12-11T16:28:00Z",
+			"delay": "00:00:00",
+			"maxConcurrency": 50,
+			"retryPolicy": {
+				"intervalInSeconds": 30
+			},
+			"dependsOn": []
+		}
+	}
+}
