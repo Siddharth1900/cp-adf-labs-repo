@@ -5,6 +5,9 @@
 			"referenceName": "ls_adlsgen2",
 			"type": "LinkedServiceReference"
 		},
+		"folder": {
+			"name": "t1"
+		},
 		"annotations": [],
 		"type": "DelimitedText",
 		"typeProperties": {
