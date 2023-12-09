@@ -57,6 +57,10 @@
 							"dependsOn": [],
 							"userProperties": [],
 							"typeProperties": {
+								"pipeline": {
+									"referenceName": "Child Pipeline",
+									"type": "PipelineReference"
+								},
 								"waitOnCompletion": true
 							}
 						}
@@ -64,6 +68,11 @@
 				}
 			}
 		],
+		"parameters": {
+			"pls_param_subfolder": {
+				"type": "string"
+			}
+		},
 		"annotations": []
 	}
 }

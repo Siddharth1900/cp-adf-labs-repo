@@ -5,11 +5,20 @@
 			"referenceName": "ls_adlsgen2",
 			"type": "LinkedServiceReference"
 		},
+		"parameters": {
+			"ds_param_subfolder": {
+				"type": "string"
+			}
+		},
 		"annotations": [],
 		"type": "DelimitedText",
 		"typeProperties": {
 			"location": {
 				"type": "AzureBlobFSLocation",
+				"fileName": {
+					"value": "@dataset().ds_param_subfolder",
+					"type": "Expression"
+				},
 				"folderPath": "india",
 				"fileSystem": "global2"
 			},
