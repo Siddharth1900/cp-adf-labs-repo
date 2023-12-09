@@ -3,7 +3,7 @@
 	"properties": {
 		"activities": [
 			{
-				"name": "Get Metadata1",
+				"name": "Parent GM",
 				"type": "GetMetadata",
 				"dependsOn": [],
 				"policy": {
@@ -17,7 +17,13 @@
 				"typeProperties": {
 					"dataset": {
 						"referenceName": "ds_adlsgen2_1209",
-						"type": "DatasetReference"
+						"type": "DatasetReference",
+						"parameters": {
+							"ds_param_subfolder": {
+								"value": "@pipeline().parameters.pls_param_subfolder",
+								"type": "Expression"
+							}
+						}
 					},
 					"fieldList": [
 						"childItems",
@@ -37,7 +43,7 @@
 				"type": "ForEach",
 				"dependsOn": [
 					{
-						"activity": "Get Metadata1",
+						"activity": "Parent GM",
 						"dependencyConditions": [
 							"Succeeded"
 						]
@@ -46,7 +52,7 @@
 				"userProperties": [],
 				"typeProperties": {
 					"items": {
-						"value": "@activity('Get Metadata1').output.childItems",
+						"value": "@activity('Parent GM').output.childItems",
 						"type": "Expression"
 					},
 					"isSequential": true,
