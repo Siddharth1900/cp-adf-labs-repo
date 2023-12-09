@@ -1,12 +1,12 @@
 {
-	"name": "ds_adlsgen2_1209_output",
+	"name": "ds_adlsgen2_source",
 	"properties": {
 		"linkedServiceName": {
-			"referenceName": "ls_adlsgen2_output",
+			"referenceName": "ls_adlsgen2",
 			"type": "LinkedServiceReference"
 		},
 		"parameters": {
-			"ds_subfoldername": {
+			"ds_subfolder": {
 				"type": "string"
 			},
 			"ds_filename": {
@@ -23,16 +23,37 @@
 					"type": "Expression"
 				},
 				"folderPath": {
-					"value": "@dataset().ds_subfoldername",
+					"value": "@concat('india/',dataset().ds_subfolder)",
 					"type": "Expression"
 				},
-				"fileSystem": "refined"
+				"fileSystem": "global2"
 			},
 			"columnDelimiter": ",",
 			"escapeChar": "\\",
 			"firstRowAsHeader": true,
 			"quoteChar": "\""
 		},
-		"schema": []
+		"schema": [
+			{
+				"name": "CustomerID",
+				"type": "String"
+			},
+			{
+				"name": "CustomerName",
+				"type": "String"
+			},
+			{
+				"name": "Location",
+				"type": "String"
+			},
+			{
+				"name": "Salary",
+				"type": "String"
+			},
+			{
+				"name": "Deptid",
+				"type": "String"
+			}
+		]
 	}
 }

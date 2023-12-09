@@ -1,5 +1,5 @@
 {
-	"name": "ds_adlsgen2_inp",
+	"name": "ds_adlsgen2_inp_ChildGM",
 	"properties": {
 		"linkedServiceName": {
 			"referenceName": "ls_adlsgen2",
@@ -15,11 +15,10 @@
 		"typeProperties": {
 			"location": {
 				"type": "AzureBlobFSLocation",
-				"fileName": {
-					"value": "@dataset().ds_subfoldername",
+				"folderPath": {
+					"value": "@concat('india/',dataset().ds_subfoldername)",
 					"type": "Expression"
 				},
-				"folderPath": "india",
 				"fileSystem": "global2"
 			},
 			"columnDelimiter": ",",
