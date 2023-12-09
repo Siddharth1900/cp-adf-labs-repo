@@ -17,17 +17,13 @@
 				"typeProperties": {
 					"dataset": {
 						"referenceName": "ds_adlsgen2_1209",
-						"type": "DatasetReference",
-						"parameters": {
-							"ds_param_subfolder": {
-								"value": "@pipeline().parameters.pls_param_subfolder",
-								"type": "Expression"
-							}
-						}
+						"type": "DatasetReference"
 					},
 					"fieldList": [
+						"exists",
 						"childItems",
-						"itemName"
+						"itemName",
+						"itemType"
 					],
 					"storeSettings": {
 						"type": "AzureBlobFSReadSettings",
@@ -67,18 +63,19 @@
 									"referenceName": "Child Pipeline",
 									"type": "PipelineReference"
 								},
-								"waitOnCompletion": true
+								"waitOnCompletion": true,
+								"parameters": {
+									"pl_param_subfolder": {
+										"value": "@item().name",
+										"type": "Expression"
+									}
+								}
 							}
 						}
 					]
 				}
 			}
 		],
-		"parameters": {
-			"pls_param_subfolder": {
-				"type": "string"
-			}
-		},
 		"annotations": []
 	}
 }
