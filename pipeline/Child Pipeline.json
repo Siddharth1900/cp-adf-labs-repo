@@ -132,7 +132,7 @@
 											"type": "Expression"
 										},
 										"ds_filename": {
-											"value": "@concat(split(item().name,'.')[0],'_',formatDateTime(utcNow(),'yyyymmdd'),'.',split(item().name,'.')[1])",
+											"value": "@concat(split(item().name,'.')[0],'_',formatDateTime(convertFromUtc(utcNow(),'Indian Standard Time'),'yyyyMMdd'),'.',split(item().name,'.')[1])\n\n",
 											"type": "Expression"
 										}
 									}
