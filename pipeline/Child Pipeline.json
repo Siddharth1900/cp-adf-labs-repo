@@ -19,7 +19,7 @@
 						"referenceName": "ds_adlsgen2_inp",
 						"type": "DatasetReference",
 						"parameters": {
-							"ds_foldername": {
+							"ds_subfoldername": {
 								"value": "@pipeline().parameters.pl_param_subfolder",
 								"type": "Expression"
 							}
