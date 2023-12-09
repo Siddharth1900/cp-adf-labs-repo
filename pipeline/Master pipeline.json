@@ -16,7 +16,7 @@
 				"userProperties": [],
 				"typeProperties": {
 					"dataset": {
-						"referenceName": "ds_adlsgen2_1209",
+						"referenceName": "ds_adlsgen2_1209_ParentGM",
 						"type": "DatasetReference"
 					},
 					"fieldList": [

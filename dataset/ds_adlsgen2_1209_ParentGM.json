@@ -1,5 +1,5 @@
 {
-	"name": "ds_adlsgen2_1209",
+	"name": "ds_adlsgen2_1209_ParentGM",
 	"properties": {
 		"linkedServiceName": {
 			"referenceName": "ls_adlsgen2",
