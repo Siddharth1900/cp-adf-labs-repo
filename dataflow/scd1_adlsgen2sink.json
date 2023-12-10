@@ -190,7 +190,7 @@
 				"     escapeChar: '\\\\',",
 				"     quoteChar: '\\\"',",
 				"     columnNamesAsHeader: false,",
-				"     partitionFileNames:[(concat('dim_cust_Processed','_',$param_loaddate,'.csv'))],",
+				"     partitionFileNames:['dim_cust_Processed.csv'],",
 				"     umask: 0022,",
 				"     preCommands: [],",
 				"     postCommands: [],",
