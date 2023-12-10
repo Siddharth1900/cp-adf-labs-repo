@@ -17,17 +17,7 @@
 				"typeProperties": {
 					"dataflow": {
 						"referenceName": "scd1_adlsgen2sink",
-						"type": "DataFlowReference",
-						"parameters": {
-							"param_loaddate": {
-								"value": "'@{'2023/12/08'}'",
-								"type": "Expression"
-							},
-							"param_processdate": {
-								"value": "'@{'2023/12/07'}'",
-								"type": "Expression"
-							}
-						}
+						"type": "DataFlowReference"
 					},
 					"compute": {
 						"coreCount": 16,
