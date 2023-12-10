@@ -57,7 +57,7 @@
 				"     quoteChar: '\\\"',",
 				"     columnNamesAsHeader: true) ~> srccust",
 				"source(output(",
-				"          surrogate_key as integer,",
+				"          surrogate_key as long,",
 				"          cid as short,",
 				"          {cname } as string,",
 				"          clocation as string,",
@@ -73,7 +73,7 @@
 				"     ignoreNoFilesFound: false,",
 				"     format: 'delimited',",
 				"     fileSystem: 'global3',",
-				"     folderPath: (concat('india/gold/dim_cust/' ,$param_processdate)),",
+				"     folderPath: (concat('india/gold/dim_cust/',$param_processdate)),",
 				"     columnDelimiter: ',',",
 				"     escapeChar: '\\\\',",
 				"     quoteChar: '\\\"',",
@@ -92,7 +92,7 @@
 				"     ignoreSpaces: false,",
 				"     broadcast: 'auto')~> FullOuterJoin",
 				"FullOuterJoin split(isNull(cid) && isNull(surrogate_key),",
-				"     (src_cid==cid && src_surrogate_key ==surrogate_key) ||(isNull(src_cid) && isNull(src_surrogate_key)),",
+				"     (src_cid==cid && src_surrogate_key ==surrogate_key) ||(isNull(src_cid)),",
 				"     (src_cid==cid) && (surrogate_key!=src_surrogate_key),",
 				"     disjoint: false) ~> split1@(NewRecords, OldRecordsUnchanged, UpdatedRecords)"
 			]
