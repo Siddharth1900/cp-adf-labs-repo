@@ -68,8 +68,8 @@
 			],
 			"scriptLines": [
 				"parameters{",
-				"     param_loaddate as string,",
-				"     param_processdate as string",
+				"     param_loaddate as string ('2023/12/09'),",
+				"     param_processdate as string ('2023/12/08')",
 				"}",
 				"source(output(",
 				"          cid as short,",
