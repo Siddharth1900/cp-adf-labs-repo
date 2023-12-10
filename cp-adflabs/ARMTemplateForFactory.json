@@ -1619,6 +1619,215 @@
 			"dependsOn": [
 				"[concat(variables('factoryId'), '/pipelines/Master pipeline')]"
 			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/scd1_adlsgen2sink')]",
+			"type": "Microsoft.DataFactory/factories/dataflows",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"type": "MappingDataFlow",
+				"typeProperties": {
+					"sources": [
+						{
+							"linkedService": {
+								"referenceName": "ls_adlsgen2",
+								"type": "LinkedServiceReference"
+							},
+							"name": "srccust"
+						},
+						{
+							"linkedService": {
+								"referenceName": "ls_adlsgen2",
+								"type": "LinkedServiceReference"
+							},
+							"name": "srcdimcust"
+						}
+					],
+					"sinks": [
+						{
+							"linkedService": {
+								"referenceName": "ls_adlsgen2",
+								"type": "LinkedServiceReference"
+							},
+							"name": "sink1"
+						}
+					],
+					"transformations": [
+						{
+							"name": "select1"
+						},
+						{
+							"name": "derivedColumn1"
+						},
+						{
+							"name": "FullOuterJoin"
+						},
+						{
+							"name": "split1"
+						},
+						{
+							"name": "select2"
+						},
+						{
+							"name": "derivedColumn2"
+						},
+						{
+							"name": "select3"
+						},
+						{
+							"name": "derivedColumn3"
+						},
+						{
+							"name": "select4"
+						},
+						{
+							"name": "select5"
+						},
+						{
+							"name": "union1"
+						},
+						{
+							"name": "sort1"
+						}
+					],
+					"scriptLines": [
+						"parameters{",
+						"     param_loaddate as string,",
+						"     param_processdate as string",
+						"}",
+						"source(output(",
+						"          cid as short,",
+						"          {cname } as string,",
+						"          clocation as string,",
+						"          cphno as long",
+						"     ),",
+						"     useSchema: false,",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     ignoreNoFilesFound: false,",
+						"     format: 'delimited',",
+						"     fileSystem: 'global3',",
+						"     folderPath: (concat('india/silver/cust/', $param_loaddate)),",
+						"     columnDelimiter: ',',",
+						"     escapeChar: '\\\\',",
+						"     quoteChar: '\\\"',",
+						"     columnNamesAsHeader: true) ~> srccust",
+						"source(output(",
+						"          surrogate_key as long,",
+						"          cid as short,",
+						"          {cname } as string,",
+						"          clocation as string,",
+						"          cphno as long,",
+						"          created_by as string,",
+						"          created_on as string,",
+						"          updated_by as string,",
+						"          updated_on as string",
+						"     ),",
+						"     useSchema: false,",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     ignoreNoFilesFound: false,",
+						"     format: 'delimited',",
+						"     fileSystem: 'global3',",
+						"     folderPath: (concat('india/gold/dim_cust/',$param_processdate)),",
+						"     columnDelimiter: ',',",
+						"     escapeChar: '\\\\',",
+						"     quoteChar: '\\\"',",
+						"     columnNamesAsHeader: true) ~> srcdimcust",
+						"srccust select(mapColumn(",
+						"          each(match(1==1),",
+						"               concat('src_',$$) = $$)",
+						"     ),",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true) ~> select1",
+						"select1 derive(src_surrogate_key = \r",
+						"crc32(concat(toString(src_cid),{src_cname },src_clocation,toString(src_cphno)))) ~> derivedColumn1",
+						"derivedColumn1, srcdimcust join(src_cid == cid,",
+						"     joinType:'outer',",
+						"     matchType:'exact',",
+						"     ignoreSpaces: false,",
+						"     broadcast: 'auto')~> FullOuterJoin",
+						"FullOuterJoin split(isNull(cid) && isNull(surrogate_key),",
+						"     (src_cid==cid && src_surrogate_key ==surrogate_key) ,",
+						"     (isNull(src_cid)),",
+						"     (src_cid==cid) && (surrogate_key!=src_surrogate_key),",
+						"     disjoint: false) ~> split1@(NewRecords, OldRecordsUnchangedLoaded, OldRecordsUnchangedNotLoaded, UpdatedRecords)",
+						"split1@NewRecords select(mapColumn(",
+						"          surrogate_key = src_surrogate_key,",
+						"          cid = src_cid,",
+						"          {cname } = {src_cname },",
+						"          clocation = src_clocation,",
+						"          cphno = src_cphno",
+						"     ),",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true) ~> select2",
+						"select2 derive(created_by = 'dataflow',",
+						"          created_on = toString(currentTimestamp()),",
+						"          updated_by = 'dataflow',",
+						"          updated_on = toString(currentTimestamp())) ~> derivedColumn2",
+						"split1@UpdatedRecords select(mapColumn(",
+						"          surrogate_key = src_surrogate_key,",
+						"          cid = src_cid,",
+						"          {cname } = {src_cname },",
+						"          clocation = src_clocation,",
+						"          cphno = src_cphno,",
+						"          created_by,",
+						"          created_on,",
+						"          updated_by",
+						"     ),",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true) ~> select3",
+						"select3 derive(updated_on = toString(currentTimestamp())) ~> derivedColumn3",
+						"split1@OldRecordsUnchangedLoaded select(mapColumn(",
+						"          surrogate_key = src_surrogate_key,",
+						"          cid = src_cid,",
+						"          {cname } = {src_cname },",
+						"          clocation = src_clocation,",
+						"          cphno = src_cphno,",
+						"          created_by,",
+						"          created_on,",
+						"          updated_by,",
+						"          updated_on",
+						"     ),",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true) ~> select4",
+						"split1@OldRecordsUnchangedNotLoaded select(mapColumn(",
+						"          surrogate_key,",
+						"          cid,",
+						"          {cname },",
+						"          clocation,",
+						"          cphno,",
+						"          created_by,",
+						"          created_on,",
+						"          updated_by,",
+						"          updated_on",
+						"     ),",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true) ~> select5",
+						"derivedColumn2, select4, select5, derivedColumn3 union(byName: true)~> union1",
+						"union1 sort(asc(cid, true)) ~> sort1",
+						"sort1 sink(allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     format: 'delimited',",
+						"     fileSystem: 'global3',",
+						"     folderPath: (concat('india/gold/dim_cust/',$param_loaddate)),",
+						"     columnDelimiter: ',',",
+						"     escapeChar: '\\\\',",
+						"     quoteChar: '\\\"',",
+						"     columnNamesAsHeader: false,",
+						"     partitionFileNames:['dim_cust_Processed.csv'],",
+						"     umask: 0022,",
+						"     preCommands: [],",
+						"     postCommands: [],",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true,",
+						"     partitionBy('hash', 1)) ~> sink1"
+					]
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/ls_adlsgen2')]"
+			]
 		}
 	]
 }

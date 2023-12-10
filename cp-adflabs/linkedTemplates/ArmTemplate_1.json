@@ -21,6 +21,208 @@
 	},
 	"resources": [
 		{
+			"name": "[concat(parameters('factoryName'), '/scd1')]",
+			"type": "Microsoft.DataFactory/factories/dataflows",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"type": "MappingDataFlow",
+				"typeProperties": {
+					"sources": [
+						{
+							"linkedService": {
+								"referenceName": "ls_adlsgen2",
+								"type": "LinkedServiceReference"
+							},
+							"name": "source"
+						},
+						{
+							"linkedService": {
+								"referenceName": "ls_AzureSqlDatabase1",
+								"type": "LinkedServiceReference"
+							},
+							"name": "target"
+						}
+					],
+					"sinks": [
+						{
+							"linkedService": {
+								"referenceName": "ls_AzureSqlDatabase1",
+								"type": "LinkedServiceReference"
+							},
+							"name": "sink1"
+						},
+						{
+							"dataset": {
+								"referenceName": "AzureSqlTable1",
+								"type": "DatasetReference"
+							},
+							"name": "sink2"
+						}
+					],
+					"transformations": [
+						{
+							"name": "select1"
+						},
+						{
+							"name": "derivedColumn1"
+						},
+						{
+							"name": "lookup1"
+						},
+						{
+							"name": "split1"
+						},
+						{
+							"name": "alterRow1"
+						},
+						{
+							"name": "derivedColumn2"
+						},
+						{
+							"name": "derivedColumn3"
+						},
+						{
+							"name": "alterRow2"
+						},
+						{
+							"name": "select3"
+						}
+					],
+					"scriptLines": [
+						"parameters{",
+						"     df_param_loaddate as string",
+						"}",
+						"source(output(",
+						"          cid as short,",
+						"          {cname } as string,",
+						"          clocation as string,",
+						"          cphno as long",
+						"     ),",
+						"     useSchema: false,",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     inferDriftedColumnTypes: true,",
+						"     ignoreNoFilesFound: false,",
+						"     format: 'delimited',",
+						"     fileSystem: 'global',",
+						"     folderPath: (concat(\"india/silver/\", $df_param_loaddate)),",
+						"     columnDelimiter: ',',",
+						"     escapeChar: '\\\\',",
+						"     quoteChar: '\\\"',",
+						"     columnNamesAsHeader: true) ~> source",
+						"source(output(",
+						"          surrogate_key as long,",
+						"          cid as integer,",
+						"          cname as string,",
+						"          clocation as string,",
+						"          cphno as long,",
+						"          created_by as string,",
+						"          created_on as timestamp,",
+						"          updated_by as string,",
+						"          updated_on as timestamp",
+						"     ),",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     inferDriftedColumnTypes: true,",
+						"     format: 'table',",
+						"     store: 'sqlserver',",
+						"     schemaName: 'dbo',",
+						"     tableName: 'dim_cust',",
+						"     isolationLevel: 'READ_UNCOMMITTED') ~> target",
+						"source select(mapColumn(",
+						"          each(match(1==1),",
+						"               concat('src_',$$) = $$)",
+						"     ),",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true) ~> select1",
+						"select1 derive(src_surrogate_key = crc32(concat(toString(src_cid),{src_cname },src_clocation,toString(src_cphno)))) ~> derivedColumn1",
+						"derivedColumn1, target lookup(src_cid == cid,",
+						"     multiple: false,",
+						"     pickup: 'any',",
+						"     broadcast: 'auto')~> lookup1",
+						"lookup1 split(isNull(cid),",
+						"     (src_cid==cid && src_surrogate_key!=surrogate_key),",
+						"     disjoint: true) ~> split1@(NewRecords, UpdatedRecords)",
+						"derivedColumn2 alterRow(insertIf(true())) ~> alterRow1",
+						"select3 derive(created_by = 'dataflow',",
+						"          created_on = currentTimestamp(),",
+						"          updated_by = 'dataflow',",
+						"          updated_on = currentTimestamp()) ~> derivedColumn2",
+						"split1@UpdatedRecords derive(updated_by = 'dataflow',",
+						"          updated_on = currentTimestamp()) ~> derivedColumn3",
+						"derivedColumn3 alterRow(updateIf(1==1)) ~> alterRow2",
+						"split1@NewRecords select(mapColumn(",
+						"          src_surrogate_key,",
+						"          src_cid,",
+						"          {src_cname },",
+						"          src_clocation,",
+						"          src_cphno",
+						"     ),",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true) ~> select3",
+						"alterRow1 sink(allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     input(",
+						"          surrogate_key as long,",
+						"          cid as integer,",
+						"          cname as string,",
+						"          clocation as string,",
+						"          cphno as long,",
+						"          created_by as string,",
+						"          created_on as timestamp,",
+						"          updated_by as string,",
+						"          updated_on as timestamp",
+						"     ),",
+						"     format: 'table',",
+						"     store: 'sqlserver',",
+						"     schemaName: 'dbo',",
+						"     tableName: 'dim_cust',",
+						"     insertable: true,",
+						"     updateable: false,",
+						"     deletable: false,",
+						"     upsertable: false,",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true,",
+						"     errorHandlingOption: 'stopOnFirstError',",
+						"     mapColumn(",
+						"          surrogate_key = src_surrogate_key,",
+						"          cid = src_cid,",
+						"          cname = {src_cname },",
+						"          clocation = src_clocation,",
+						"          cphno = src_cphno,",
+						"          created_by,",
+						"          created_on,",
+						"          updated_by,",
+						"          updated_on",
+						"     )) ~> sink1",
+						"alterRow2 sink(allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     deletable:false,",
+						"     insertable:true,",
+						"     updateable:true,",
+						"     upsertable:false,",
+						"     keys:['cid'],",
+						"     format: 'table',",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true,",
+						"     errorHandlingOption: 'stopOnFirstError',",
+						"     mapColumn(",
+						"          surrogate_key = src_surrogate_key,",
+						"          cid = src_cid,",
+						"          {cname } = {src_cname },",
+						"          clocation = src_clocation,",
+						"          cphno = src_cphno,",
+						"          created_by,",
+						"          created_on,",
+						"          updated_by,",
+						"          updated_on",
+						"     )) ~> sink2"
+					]
+				}
+			},
+			"dependsOn": []
+		},
+		{
 			"name": "[concat(parameters('factoryName'), '/Child Pipeline')]",
 			"type": "Microsoft.DataFactory/factories/pipelines",
 			"apiVersion": "2018-06-01",
@@ -406,7 +608,9 @@
 				},
 				"annotations": []
 			},
-			"dependsOn": []
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/dataflows/scd1')]"
+			]
 		},
 		{
 			"name": "[concat(parameters('factoryName'), '/tmb_trigger1')]",
