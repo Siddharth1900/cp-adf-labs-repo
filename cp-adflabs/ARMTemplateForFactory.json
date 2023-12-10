@@ -1692,8 +1692,8 @@
 					],
 					"scriptLines": [
 						"parameters{",
-						"     param_loaddate as string,",
-						"     param_processdate as string",
+						"     param_loaddate as string ('2023/12/09'),",
+						"     param_processdate as string ('2023/12/08')",
 						"}",
 						"source(output(",
 						"          cid as short,",
@@ -1754,7 +1754,7 @@
 						"split1@NewRecords select(mapColumn(",
 						"          surrogate_key = src_surrogate_key,",
 						"          cid = src_cid,",
-						"          {cname } = {src_cname },",
+						"          cname = {src_cname },",
 						"          clocation = src_clocation,",
 						"          cphno = src_cphno",
 						"     ),",
@@ -1767,7 +1767,7 @@
 						"split1@UpdatedRecords select(mapColumn(",
 						"          surrogate_key = src_surrogate_key,",
 						"          cid = src_cid,",
-						"          {cname } = {src_cname },",
+						"          cname = {src_cname },",
 						"          clocation = src_clocation,",
 						"          cphno = src_cphno,",
 						"          created_by,",
@@ -1780,7 +1780,7 @@
 						"split1@OldRecordsUnchangedLoaded select(mapColumn(",
 						"          surrogate_key = src_surrogate_key,",
 						"          cid = src_cid,",
-						"          {cname } = {src_cname },",
+						"          cname = {src_cname },",
 						"          clocation = src_clocation,",
 						"          cphno = src_cphno,",
 						"          created_by,",
@@ -1793,7 +1793,7 @@
 						"split1@OldRecordsUnchangedNotLoaded select(mapColumn(",
 						"          surrogate_key,",
 						"          cid,",
-						"          {cname },",
+						"          cname = {cname },",
 						"          clocation,",
 						"          cphno,",
 						"          created_by,",
@@ -1823,7 +1823,7 @@
 						"     mapColumn(",
 						"          surrogate_key,",
 						"          cid,",
-						"          {cname },",
+						"          {cname } = cname,",
 						"          clocation,",
 						"          cphno,",
 						"          created_by,",
@@ -1863,11 +1863,11 @@
 								"type": "DataFlowReference",
 								"parameters": {
 									"param_loaddate": {
-										"value": "'@{'2023/12/08'}'",
+										"value": "'@{'2023/12/09'}'",
 										"type": "Expression"
 									},
 									"param_processdate": {
-										"value": "'@{'2023/12/07'}'",
+										"value": "'@{'2023/12/08'}'",
 										"type": "Expression"
 									}
 								},
