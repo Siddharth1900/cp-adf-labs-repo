@@ -196,6 +196,17 @@
 				"     postCommands: [],",
 				"     skipDuplicateMapInputs: true,",
 				"     skipDuplicateMapOutputs: true,",
+				"     mapColumn(",
+				"          surrogate_key,",
+				"          cid,",
+				"          {cname },",
+				"          clocation,",
+				"          cphno,",
+				"          created_by,",
+				"          created_on,",
+				"          updated_by,",
+				"          updated_on",
+				"     ),",
 				"     partitionBy('hash', 1)) ~> sink1"
 			]
 		}
