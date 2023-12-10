@@ -32,6 +32,18 @@
 				},
 				{
 					"name": "split1"
+				},
+				{
+					"name": "select2"
+				},
+				{
+					"name": "derivedColumn2"
+				},
+				{
+					"name": "select3"
+				},
+				{
+					"name": "derivedColumn3"
 				}
 			],
 			"scriptLines": [
@@ -94,7 +106,33 @@
 				"FullOuterJoin split(isNull(cid) && isNull(surrogate_key),",
 				"     (src_cid==cid && src_surrogate_key ==surrogate_key) ||(isNull(src_cid)),",
 				"     (src_cid==cid) && (surrogate_key!=src_surrogate_key),",
-				"     disjoint: false) ~> split1@(NewRecords, OldRecordsUnchanged, UpdatedRecords)"
+				"     disjoint: false) ~> split1@(NewRecords, OldRecordsUnchanged, UpdatedRecords)",
+				"split1@NewRecords select(mapColumn(",
+				"          src_surrogate_key,",
+				"          src_cid,",
+				"          {src_cname },",
+				"          src_clocation,",
+				"          src_cphno",
+				"     ),",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true) ~> select2",
+				"select2 derive(created_by = 'dataflow',",
+				"          created_on = toString(currentTimestamp()),",
+				"          updated_by = 'dataflow',",
+				"          updated_on = toString(currentTimestamp())) ~> derivedColumn2",
+				"split1@UpdatedRecords select(mapColumn(",
+				"          src_surrogate_key,",
+				"          src_cid,",
+				"          {src_cname },",
+				"          src_clocation,",
+				"          src_cphno,",
+				"          created_by,",
+				"          created_on,",
+				"          updated_by",
+				"     ),",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true) ~> select3",
+				"select3 derive(updated_on = toString(currentTimestamp())) ~> derivedColumn3"
 			]
 		}
 	}
